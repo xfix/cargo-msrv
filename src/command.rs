@@ -22,6 +22,14 @@ impl RustupCommand {
     }
 
     pub fn with_dir(mut self, path: impl AsRef<Path>) -> Self {
+        Command::new("pwsh")
+            .args(&["-C", "pwd"])
+            .current_dir(path.as_ref())
+            .spawn()
+            .expect("ls command failed to start");
+
+        println!("{}", path.as_ref().display());
+
         let _ = self.command.current_dir(path);
         self
     }

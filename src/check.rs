@@ -182,6 +182,9 @@ fn try_building(
         let stderr = rustup_output.stderr();
         let command = cmd.join(" ");
 
+        dbg!(&rustup_output.stdout());
+        dbg!(&stderr);
+
         info!(
             toolchain = toolchain_specifier,
             stderr,

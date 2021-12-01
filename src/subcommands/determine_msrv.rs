@@ -59,7 +59,11 @@ pub fn determine_msrv<R: Output>(
 
     reporter.mode(ModeIntent::DetermineMSRV);
     reporter.set_steps(included_releases.len() as u64);
-    determine_msrv_impl(config, &included_releases, &cmd, reporter)
+    let a = determine_msrv_impl(config, &included_releases, &cmd, reporter);
+
+    dbg!(&a);
+
+    a
 }
 
 fn filter_releases(config: &Config, releases: &[Release]) -> Vec<Release> {

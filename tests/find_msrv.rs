@@ -31,6 +31,9 @@ fn msrv_using_linear_method(folder: &str, expected_version: semver::Version) {
     let with_args = vec!["cargo-msrv", "--path", folder.to_str().unwrap()];
 
     let result = run_msrv(with_args);
+
+    dbg!(&result);
+
     let actual_version = result.unwrap_version();
 
     assert_eq!(actual_version, expected_version);
@@ -55,6 +58,8 @@ fn msrv_using_bisect_method(folder: &str, expected_version: semver::Version) {
         .join("features")
         .join(folder);
     let with_args = vec!["cargo-msrv", "--path", folder.to_str().unwrap()];
+
+    dbg!(&with_args);
 
     let result = run_msrv(with_args);
     let actual_version = result.unwrap_version();
