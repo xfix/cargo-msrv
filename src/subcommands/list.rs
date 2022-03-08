@@ -1,4 +1,4 @@
-use crate::config::list::ListVariant;
+use crate::config::list::ListMsrvVariant;
 use crate::config::{Config, ModeIntent, OutputFormat};
 use crate::dependencies::resolver::{CargoMetadataResolver, DependencyResolver};
 use crate::errors::TResult;
@@ -13,7 +13,7 @@ pub fn run_list_msrv<R: Output>(config: &Config, output: &R) -> TResult<()> {
     let graph = resolver.resolve()?;
 
     match config.sub_command_config().list().variant {
-        ListVariant::DirectDeps => match config.output_format() {
+        ListMsrvVariant::DirectDeps => match config.output_format() {
             OutputFormat::Human => {
                 use crate::reporter::ui::HumanPrinter;
                 let formatter = formatter::DirectDependenciesFormatter::<HumanPrinter>::new(graph);
@@ -26,7 +26,7 @@ pub fn run_list_msrv<R: Output>(config: &Config, output: &R) -> TResult<()> {
             }
             OutputFormat::None | OutputFormat::TestSuccesses => {}
         },
-        ListVariant::OrderedByMSRV => match config.output_format() {
+        ListMsrvVariant::OrderedByMSRV => match config.output_format() {
             OutputFormat::Human => {
                 use crate::reporter::ui::HumanPrinter;
                 let formatter = formatter::ByMSRVFormatter::<HumanPrinter>::new(graph);
