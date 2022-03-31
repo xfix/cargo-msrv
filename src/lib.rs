@@ -7,11 +7,14 @@ extern crate tracing;
 #[cfg(feature = "rust-releases-dist-source")]
 use rust_releases::RustDist;
 use rust_releases::{semver, Channel, FetchResources, ReleaseIndex, RustChangelog, Source};
+use std::io::Write;
 
 use crate::config::{Config, ModeIntent, ReleaseSource};
 use crate::errors::{CargoMSRVError, TResult};
 use crate::reporter::{Output, ProgressAction};
 
+use crate::reporter_new::events::FetchingIndex;
+use crate::reporter_new::{events, Report, ReportType, Reporter};
 use crate::subcommands::list::run_list_msrv;
 use crate::subcommands::set::run_set_msrv;
 use crate::subcommands::show::run_show_msrv;
@@ -37,17 +40,23 @@ pub(crate) mod outcome;
 pub(crate) mod paths;
 pub(crate) mod releases;
 pub mod reporter;
-pub(crate) mod reporter_new;
+pub mod reporter_new;
 pub(crate) mod result;
 pub(crate) mod search_methods;
 pub(crate) mod subcommands;
 pub(crate) mod toolchain;
 pub(crate) mod toolchain_file;
 
-pub fn run_app<R: Output>(config: &Config, reporter: &R) -> TResult<()> {
-    reporter.progress(ProgressAction::FetchingIndex);
-
+pub fn run_app<R: ReportType, W: Write>(
+    config: &Config,
+    reporter: &mut Reporter<R, W>,
+) -> TResult<()>
+where
+    FetchingIndex: events::Event<R>,
+{
+    reporter.report_event(FetchingIndex);
     let index = fetch_index(config)?;
+
     run_action(config, &index, reporter)
 }
 
@@ -70,7 +79,11 @@ fn fetch_index(config: &Config) -> TResult<ReleaseIndex> {
     Ok(index)
 }
 
-fn run_action<R: Output>(config: &Config, index: &ReleaseIndex, reporter: &R) -> TResult<()> {
+fn run_action<R: ReportType, W: Write>(
+    config: &Config,
+    index: &ReleaseIndex,
+    reporter: &mut Reporter<R, W>,
+) -> TResult<()> {
     let action = config.action_intent();
 
     info!(
@@ -79,10 +92,12 @@ fn run_action<R: Output>(config: &Config, index: &ReleaseIndex, reporter: &R) ->
     );
 
     match action {
-        ModeIntent::Find => run_find_msrv_action(config, reporter, index),
-        ModeIntent::Verify => run_verify_msrv_action(config, reporter, index),
-        ModeIntent::List => run_list_msrv(config, reporter),
-        ModeIntent::Set => run_set_msrv(config, reporter),
+        // ModeIntent::Find => run_find_msrv_action(config, reporter, index),
+        // ModeIntent::Verify => run_verify_msrv_action(config, reporter, index),
+        // ModeIntent::List => run_list_msrv(config, reporter),
+        // ModeIntent::Set => run_set_msrv(config, reporter),
         ModeIntent::Show => run_show_msrv(config, reporter),
-    }
+    };
+
+    Ok(())
 }

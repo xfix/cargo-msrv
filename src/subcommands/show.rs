@@ -3,12 +3,16 @@ use crate::errors::{CargoMSRVError, IoErrorSource, TResult};
 use crate::manifest::bare_version::BareVersion;
 use crate::manifest::{CargoManifest, CargoManifestParser, TomlParser};
 use crate::paths::crate_root_folder;
-use crate::reporter::Output;
+use crate::{ReportType, Reporter};
 use std::convert::TryFrom;
+use std::io::Write;
 use toml_edit::Document;
 
-pub fn run_show_msrv<R: Output>(config: &Config, output: &R) -> TResult<()> {
-    output.mode(ModeIntent::Show);
+pub fn run_show_msrv<R: ReportType, W: Write>(
+    config: &Config,
+    reporter: &mut Reporter<R, W>,
+) -> TResult<()> {
+    // reporter.mode(ModeIntent::Show);
 
     let crate_folder = crate_root_folder(config)?;
     let cargo_toml = crate_folder.join("Cargo.toml");
@@ -23,12 +27,12 @@ pub fn run_show_msrv<R: Output>(config: &Config, output: &R) -> TResult<()> {
 
     let msrv = manifest.minimum_rust_version();
     if msrv.is_some() {
-        output.finish_success(
-            ModeIntent::Show,
-            msrv.map(BareVersion::to_semver_version).as_ref(),
-        );
+        // reporter.finish_success(
+        //     ModeIntent::Show,
+        //     msrv.map(BareVersion::to_semver_version).as_ref(),
+        // );
     } else {
-        output.finish_failure(ModeIntent::Show, None);
+        // reporter.finish_failure(ModeIntent::Show, None);
     }
 
     Ok(())

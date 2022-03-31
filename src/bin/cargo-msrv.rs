@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
 use std::ffi::OsString;
+use std::io::Stdout;
 use std::path::{Path, PathBuf};
 
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
@@ -9,6 +10,7 @@ use cargo_msrv::config::{self, Config, ModeIntent, TracingOptions, TracingTarget
 use cargo_msrv::errors::{CargoMSRVError, TResult};
 use cargo_msrv::exit_code::ExitCode;
 use cargo_msrv::reporter;
+use cargo_msrv::reporter_new::{HumanOutput, JsonOutput, OutputDisabled, Reporter};
 use cargo_msrv::run_app;
 
 fn main() {
@@ -56,8 +58,9 @@ fn init_and_run(config: &Config) -> TResult<()> {
     match config.output_format() {
         config::OutputFormat::Human => {
             let custom_cmd = config.check_command_string();
-            let reporter = reporter::ui::HumanPrinter::new(1, config.target(), &custom_cmd);
-            run_app(config, &reporter)
+
+            let mut reporter: Reporter<HumanOutput, Stdout> = Reporter::new(std::io::stdout());
+            run_app(config, &mut reporter)
         }
         config::OutputFormat::Json => {
             let custom_cmd = if let ModeIntent::List = config.action_intent() {
@@ -66,21 +69,19 @@ fn init_and_run(config: &Config) -> TResult<()> {
                 Some(config.check_command_string())
             };
 
-            let reporter =
-                reporter::json::JsonPrinter::new(1, config.target(), custom_cmd.as_deref());
-            run_app(config, &reporter)
+            let mut reporter: Reporter<JsonOutput, Stdout> = Reporter::new(std::io::stdout());
+            run_app(config, &mut reporter)
         }
         config::OutputFormat::None => {
             // To disable regular output. Useful when outputting logs to stdout, as the
             //   regular output and the log output may otherwise interfere with each other.
-            let reporter = reporter::no_output::NoOutput;
-
-            run_app(config, &reporter)
+            let mut reporter: Reporter<OutputDisabled, Stdout> = Reporter::new(std::io::stdout());
+            run_app(config, &mut reporter)
         }
         config::OutputFormat::TestSuccesses => {
             // for collecting success results during testing
-            let reporter = reporter::__private::SuccessOutput::default();
-            run_app(config, &reporter)
+            let mut reporter: Reporter<OutputDisabled, Stdout> = Reporter::new(std::io::stdout());
+            run_app(config, &mut reporter)
         }
     }?;
 
