@@ -1,4 +1,6 @@
 use crate::manifest::bare_version::BareVersion;
+use std::fmt::Debug;
+use std::io::Write;
 
 #[derive(Debug)]
 pub struct Reporter<T: OutputType, W> {
@@ -12,7 +14,7 @@ impl<W: std::io::Write> Report<HumanOutput> for Reporter<HumanOutput, W> {
         E: Event<HumanOutput>,
     {
         let writer = &mut self.writer;
-        event.write_formatted_event(writer);
+        event.write_event(writer);
     }
 }
 
@@ -22,7 +24,7 @@ impl<W: std::io::Write> Report<JsonOutput> for Reporter<JsonOutput, W> {
         E: Event<JsonOutput>,
     {
         let writer = &mut self.writer;
-        event.write_formatted_event(writer);
+        event.write_event(writer);
     }
 }
 
@@ -44,21 +46,19 @@ impl OutputType for HumanOutput {}
 impl OutputType for JsonOutput {}
 
 pub trait Event<T> {
-    fn write_formatted_event<W>(&self, writer: &mut W)
+    fn write_event<W>(&self, writer: &mut W)
     where
         W: std::io::Write;
 }
 
 // -- Example event, which implements an Event
 
-struct MsrvFoundEvent {
+struct ExampleEvent {
     msrv: BareVersion,
 }
 
-impl MsrvFoundEvent {}
-
-impl Event<HumanOutput> for MsrvFoundEvent {
-    fn write_formatted_event<W>(&self, writer: &mut W)
+impl Event<HumanOutput> for ExampleEvent {
+    fn write_event<W>(&self, writer: &mut W)
     where
         W: std::io::Write,
     {
@@ -66,8 +66,8 @@ impl Event<HumanOutput> for MsrvFoundEvent {
     }
 }
 
-impl Event<JsonOutput> for MsrvFoundEvent {
-    fn write_formatted_event<W>(&self, writer: &mut W)
+impl Event<JsonOutput> for ExampleEvent {
+    fn write_event<W>(&self, writer: &mut W)
     where
         W: std::io::Write,
     {
@@ -78,7 +78,7 @@ impl Event<JsonOutput> for MsrvFoundEvent {
 #[cfg(test)]
 mod tests {
     use crate::manifest::bare_version::BareVersion;
-    use crate::reporter_new::{JsonOutput, MsrvFoundEvent, Report, Reporter};
+    use crate::reporter_new::{ExampleEvent, JsonOutput, Report, Reporter};
 
     #[test]
     fn test_case() {
@@ -87,7 +87,7 @@ mod tests {
             writer: std::io::stdout(),
         };
 
-        let event = MsrvFoundEvent {
+        let event = ExampleEvent {
             msrv: BareVersion::TwoComponents(1, 2),
         };
 
