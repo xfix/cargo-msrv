@@ -3,14 +3,19 @@ use crate::manifest::bare_version::BareVersion;
 use crate::manifest::{CargoManifestParser, TomlParser};
 use crate::paths::crate_root_folder;
 use crate::{CargoMSRVError, Config, ModeIntent, Output, SubCommand, TResult};
+use context::SetContext;
 use rust_releases::semver;
 use std::io::Write;
 use toml_edit::{value, Document, Item};
 
+mod context;
+
 const RUST_VERSION_SUPPORTED_SINCE: semver::Version = semver::Version::new(1, 56, 0);
 
 #[derive(Default)]
-pub struct Set;
+pub struct Set {
+    ctx: SetContext,
+}
 
 impl SubCommand for Set {
     fn run<R: Output>(&self, config: &Config, reporter: &R) -> TResult<()> {
@@ -22,7 +27,7 @@ fn set_msrv<R: Output>(config: &Config, output: &R) -> TResult<()> {
     output.mode(ModeIntent::Show);
 
     let crate_folder = crate_root_folder(config)?;
-    let cargo_toml = crate_folder.join("Cargo.toml");
+    let cargo_toml = config.ctx().manifest_path(config);
 
     let contents = std::fs::read_to_string(&cargo_toml).map_err(|error| CargoMSRVError::Io {
         error,

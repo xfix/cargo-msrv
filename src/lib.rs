@@ -26,7 +26,7 @@ pub mod reporter;
 pub mod toolchain;
 
 pub(crate) mod command;
-pub(crate) mod ctx;
+pub(crate) mod context;
 pub(crate) mod dependencies;
 pub(crate) mod download;
 pub(crate) mod fetch;

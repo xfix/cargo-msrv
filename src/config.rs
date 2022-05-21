@@ -8,7 +8,6 @@ use crate::cli::CargoCli;
 use crate::config::list::ListCmdConfig;
 use crate::config::set::SetCmdConfig;
 use crate::config::verify::VerifyCmdConfig;
-use crate::ctx::ComputedCtx;
 use rust_releases::semver;
 
 use crate::errors::{CargoMSRVError, TResult};
@@ -225,7 +224,6 @@ pub struct Config<'a> {
     no_check_feedback: bool,
 
     sub_command_config: SubCommandConfig,
-    ctx: ComputedCtx,
 }
 
 impl<'a> Config<'a> {
@@ -247,7 +245,6 @@ impl<'a> Config<'a> {
             no_read_min_edition: None,
             no_check_feedback: false,
             sub_command_config: SubCommandConfig::None,
-            ctx: ComputedCtx::default(),
         }
     }
 
@@ -318,10 +315,6 @@ impl<'a> Config<'a> {
 
     pub fn sub_command_config(&self) -> &SubCommandConfig {
         &self.sub_command_config
-    }
-
-    pub fn ctx(&self) -> &ComputedCtx {
-        &self.ctx
     }
 }
 
